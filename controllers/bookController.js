@@ -87,7 +87,8 @@ const updateBook = async (req, res) => {
         }
         res.status(200).json(updatedBook);
     } catch (error) {
-        res.status(500).json({ message: "Error updating book", error });
+       console.log("REAL ERROR:", error);
+       res.status(500).json({ message: "ERROR fetching books", error });
     }
 };
 
