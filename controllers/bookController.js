@@ -1,4 +1,4 @@
-const Book = require('../models/bookModel');
+const Book = require("../models/bookModel")
 
 // Create a new book
 const createBook = async (req, res) => {
@@ -18,25 +18,22 @@ const createBook = async (req, res) => {
 };
 
 // Get all books
-const getBooks = async (req, res) => {
-    try {
-        //page and limit
-       let page = parseInt(req.query.page) || 1;
-       let limit = parseInt(req.query.limit) || 10;
-       let skip = (page - 1) * limit;
+   const getBooks = async (req, res) => {
+  try {
+    const books = await Book.find();
 
-        const books = await Book.find().skip(skip).limit(limit);
-        const totalBooks = await Book.countDocuments();
-        res.status(200).json({
-            success: true,
-            page,
-            totalpages: Math.ceil(totalBooks / limit),
-            totalBooks: totalBooks,
-            data: books
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching books", error });
-    }
+    res.status(200).json({
+      success: true,
+      data: books
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching books"
+    });
+  }
 };
 
 // Get a book by ID
@@ -67,31 +64,31 @@ const deleteBook = async (req, res) => {
 
 // Update a book
 const updateBook = async (req, res) => {
-    try {
-        const { title, author, price } = req.body;
+  try {
+    const book = await Book.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
 
-        if (!title || !author || !price) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        console.log('ID RECEIVED:', req.params.id);
-        console.log('BODY RECEIVED:', req.body);
-        const updatedBook = await Book.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-        {
-            returnDocument: "after",
-        }
-        );
-        if (!updatedBook) {
-            return res.status(404).json({ message: "Book not found" });
-        }
-        res.status(200).json(updatedBook);
-    } catch (error) {
-       console.log("REAL ERROR:", error);
-       res.status(500).json({ message: "ERROR fetching books", error });
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
     }
-};
 
+    res.status(200).json({
+      success: true,
+      data: book
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
 
 module.exports = {
     createBook,
